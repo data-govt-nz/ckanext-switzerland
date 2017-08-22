@@ -12,7 +12,8 @@ from ckanext.switzerland.helpers import (
     get_frequency_name, get_terms_of_use_icon, get_dataset_terms_of_use,
     get_political_level, get_dataset_by_identifier, get_readable_file_size,
     simplify_terms_of_use, parse_json, get_piwik_config,
-    ogdch_localised_number, ogdch_group_tree, map_to_valid_format
+    ogdch_localised_number, ogdch_group_tree, map_to_valid_format,
+    get_expected_update
 )
 
 import ckan.plugins as plugins
@@ -395,6 +396,12 @@ class OgdchPackagePlugin(OgdchLanguagePlugin):
     def before_view(self, pkg_dict):
         if not self.is_supported_package_type(pkg_dict):
             return pkg_dict
+
+        if pkg_dict.get('modified') and pkg_dict.get('accrual_periodicity'):
+            pkg_dict['expected_update'] = get_expected_update(
+                pkg_dict.get('modified'),
+                pkg_dict.get('accrual_periodicity')
+            ) or None
 
         # create resource views if necessary
         user = logic.get_action('get_site_user')({'ignore_auth': True}, {})
